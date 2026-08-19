@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pendulum Wave</title>
+    <title>Live City Simulation · AI · Laws · Life</title>
     <style>
-        /* ── Reset & Base ── */
-        *,
-        *::before,
-        *::after {
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -20,11 +17,9 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             color: #e8edf5;
             padding: 16px;
-            margin: 0;
-            user-select: none;
         }
 
         .app {
@@ -32,24 +27,23 @@
             width: 100%;
             background: linear-gradient(145deg, #121824, #1a2233);
             border-radius: 32px;
-            padding: 28px 32px 32px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            padding: 24px 28px 28px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.04);
         }
 
-        /* ── Header ── */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 18px;
-            padding: 0 4px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .header h1 {
             font-size: 22px;
             font-weight: 500;
-            letter-spacing: 0.3px;
             background: linear-gradient(135deg, #c8d6e5, #8395a7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -61,156 +55,86 @@
 
         .header h1 span {
             font-weight: 300;
-            font-size: 16px;
-            opacity: 0.6;
-            -webkit-text-fill-color: rgba(255, 255, 255, 0.45);
+            font-size: 14px;
+            opacity: 0.5;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.4);
         }
 
-        .time-display {
-            font-size: 18px;
-            font-weight: 400;
-            letter-spacing: 0.5px;
-            color: #a0b4c8;
-            background: rgba(255, 255, 255, 0.04);
+        .stats {
+            display: flex;
+            gap: 18px;
+            font-size: 13px;
+            color: #8fa4bc;
+            background: rgba(255, 255, 255, 0.03);
             padding: 6px 18px;
-            border-radius: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            font-variant-numeric: tabular-nums;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .time-display .num {
-            color: #eef5ff;
+        .stats .num {
+            color: #d6e3f0;
             font-weight: 500;
         }
 
-        /* ── Canvas Wrapper ── */
         .canvas-wrapper {
-            position: relative;
-            border-radius: 18px;
+            border-radius: 16px;
             overflow: hidden;
-            background: radial-gradient(ellipse at 50% 20%, #1a2538, #0b101a);
+            background: #0f1625;
             border: 1px solid rgba(255, 255, 255, 0.04);
             box-shadow: inset 0 4px 30px rgba(0, 0, 0, 0.6);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            position: relative;
         }
 
-        canvas#pendulumCanvas {
+        canvas#cityCanvas {
             display: block;
             width: 100%;
             height: auto;
-            aspect-ratio: 16 / 9;
+            aspect-ratio: 16 / 10;
             background: transparent;
             cursor: default;
+            image-rendering: pixelated;
         }
 
-        /* ── Controls ── */
         .controls {
             display: flex;
             flex-wrap: wrap;
-            gap: 16px 28px;
+            gap: 12px 24px;
             align-items: center;
             justify-content: center;
-            padding: 14px 6px 4px;
+            padding: 8px 4px 0;
             border-top: 1px solid rgba(255, 255, 255, 0.04);
-            margin-top: 4px;
+            margin-top: 2px;
         }
 
         .control-group {
             display: flex;
             align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .control-group label {
-            font-size: 13px;
-            font-weight: 400;
+            font-size: 12px;
             color: #8fa4bc;
             letter-spacing: 0.3px;
-            min-width: 44px;
-        }
-
-        .control-group .value {
-            font-size: 14px;
-            font-weight: 500;
-            color: #d6e3f0;
-            min-width: 32px;
-            text-align: center;
-        }
-
-        input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 110px;
-            height: 4px;
-            border-radius: 4px;
-            background: linear-gradient(90deg, #2a3a55, #5b7f9e);
-            outline: none;
-            transition: opacity 0.2s;
-            cursor: pointer;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #7eb6d9, #3f6a8c);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 16px rgba(94, 159, 209, 0.25);
-            transition: 0.15s;
-            cursor: pointer;
-        }
-
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.12);
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 24px rgba(94, 159, 209, 0.4);
-        }
-
-        input[type="range"]::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #7eb6d9, #3f6a8c);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            cursor: pointer;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
         }
 
         .btn {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.08);
             color: #c8dae9;
-            padding: 7px 18px;
+            padding: 5px 16px;
             border-radius: 30px;
-            font-size: 14px;
-            font-weight: 450;
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.2s;
-            letter-spacing: 0.3px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
             font-family: inherit;
-            backdrop-filter: blur(4px);
         }
 
         .btn:hover {
             background: rgba(255, 255, 255, 0.10);
             border-color: rgba(255, 255, 255, 0.15);
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn:active {
-            transform: translateY(0px);
         }
 
         .btn-primary {
@@ -221,7 +145,6 @@
 
         .btn-primary:hover {
             background: linear-gradient(135deg, #3a5f82, #25415e);
-            border-color: rgba(94, 159, 209, 0.4);
         }
 
         .btn-primary.active {
@@ -230,83 +153,63 @@
         }
 
         .btn-icon {
-            font-size: 16px;
-            line-height: 1;
+            font-size: 14px;
+            margin-right: 4px;
         }
 
-        /* ── Wave status badge ── */
-        .status-badge {
-            font-size: 12px;
-            font-weight: 400;
-            padding: 4px 14px;
+        .badge {
+            font-size: 11px;
+            padding: 3px 14px;
             border-radius: 30px;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.06);
             color: #7a96b0;
-            letter-spacing: 0.4px;
         }
 
-        .status-badge .highlight {
-            color: #b8d4f0;
-            font-weight: 450;
+        .badge .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse-dot 1.5s ease-in-out infinite;
         }
 
-        /* ── Responsive ── */
+        .badge .dot.green {
+            background: #5ad0a0;
+        }
+
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                opacity: 0.4;
+                transform: scale(0.9);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
         @media (max-width: 700px) {
             .app {
-                padding: 16px 16px 20px;
-                border-radius: 20px;
-            }
-            .header {
-                flex-wrap: wrap;
-                gap: 8px;
+                padding: 14px 12px 18px;
+                border-radius: 18px;
             }
             .header h1 {
-                font-size: 18px;
+                font-size: 17px;
             }
-            .header h1 span {
-                font-size: 13px;
-            }
-            .time-display {
-                font-size: 14px;
-                padding: 4px 14px;
+            .stats {
+                font-size: 11px;
+                padding: 4px 12px;
+                gap: 10px;
             }
             .controls {
-                gap: 12px 16px;
-                padding: 12px 0 0;
-            }
-            input[type="range"] {
-                width: 80px;
-            }
-            .control-group label {
-                font-size: 12px;
-                min-width: 32px;
+                gap: 8px 12px;
             }
             .btn {
-                font-size: 12px;
-                padding: 5px 12px;
-            }
-            canvas#pendulumCanvas {
-                aspect-ratio: 4 / 3;
-            }
-        }
-
-        @media (max-width: 450px) {
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 8px;
-            }
-            .control-group {
-                justify-content: space-between;
-            }
-            input[type="range"] {
-                flex: 1;
-                width: auto;
-            }
-            .btn-group {
-                justify-content: center;
-                margin-top: 4px;
+                font-size: 11px;
+                padding: 4px 12px;
             }
         }
     </style>
@@ -314,595 +217,1124 @@
 <body>
 
     <div class="app">
-        <!-- Header -->
         <div class="header">
-            <h1>
-                Pendulum Wave
-                <span>synchronization</span>
-            </h1>
-            <div class="time-display">
-                <span class="num" id="timeDisplay">0.00</span>s
+            <h1>🏙️ CitySim <span>AI · laws · life</span></h1>
+            <div class="stats">
+                <span>👤 <span class="num" id="peopleCount">0</span></span>
+                <span>🚗 <span class="num" id="carCount">0</span></span>
+                <span>⏱️ <span class="num" id="timeDisplay">0:00</span></span>
             </div>
         </div>
 
-        <!-- Canvas -->
         <div class="canvas-wrapper">
-            <canvas id="pendulumCanvas"></canvas>
+            <canvas id="cityCanvas"></canvas>
         </div>
 
-        <!-- Controls -->
         <div class="controls">
-            <!-- Pendulums -->
-            <div class="control-group">
-                <label>Count</label>
-                <input type="range" id="countSlider" min="6" max="30" value="20" step="1" />
-                <span class="value" id="countValue">20</span>
-            </div>
-
-            <!-- Speed -->
             <div class="control-group">
                 <label>Speed</label>
-                <input type="range" id="speedSlider" min="0" max="300" value="100" step="1" />
-                <span class="value" id="speedValue">1.0×</span>
+                <input type="range" id="speedSlider" min="0" max="300" value="100" step="1" style="width:90px;" />
+                <span class="badge" style="min-width:36px;text-align:center;" id="speedValue">1.0×</span>
             </div>
-
-            <!-- Amplitude -->
             <div class="control-group">
-                <label>Amplitude</label>
-                <input type="range" id="ampSlider" min="5" max="45" value="22" step="1" />
-                <span class="value" id="ampValue">22°</span>
+                <button class="btn btn-primary" id="playBtn"><span class="btn-icon">⏸</span> Pause</button>
+                <button class="btn" id="resetBtn"><span class="btn-icon">↺</span> Reset</button>
             </div>
-
-            <!-- Buttons -->
-            <div class="btn-group">
-                <button class="btn btn-primary" id="playBtn">
-                    <span class="btn-icon">⏸</span> Pause
-                </button>
-                <button class="btn" id="resetBtn">
-                    <span class="btn-icon">↺</span> Reset
-                </button>
-            </div>
-
-            <!-- Status -->
-            <div class="status-badge" id="statusBadge">
-                <span class="highlight">●</span> wave
+            <div class="badge">
+                <span class="dot green"></span> <span id="statusText">AI alive</span>
             </div>
         </div>
     </div>
 
     <script>
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  Pendulum Wave Simulation
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  LIVE CITY SIMULATION  —  AI · LAWS · LIFE
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         (() => {
             'use strict';
 
-            // ── DOM refs ──
-            const canvas = document.getElementById('pendulumCanvas');
+            // ── Canvas setup ──
+            const canvas = document.getElementById('cityCanvas');
             const ctx = canvas.getContext('2d');
-
+            const peopleCountEl = document.getElementById('peopleCount');
+            const carCountEl = document.getElementById('carCount');
             const timeDisplay = document.getElementById('timeDisplay');
-            const countSlider = document.getElementById('countSlider');
-            const countValue = document.getElementById('countValue');
             const speedSlider = document.getElementById('speedSlider');
             const speedValue = document.getElementById('speedValue');
-            const ampSlider = document.getElementById('ampSlider');
-            const ampValue = document.getElementById('ampValue');
             const playBtn = document.getElementById('playBtn');
             const resetBtn = document.getElementById('resetBtn');
-            const statusBadge = document.getElementById('statusBadge');
+            const statusText = document.getElementById('statusText');
 
-            // ── Physics constants ──
-            const G = 9.8; // gravity (m/s²)
-
-            // ── State ──
-            let numPendulums = 20;
-            let speedFactor = 1.0; // 0 … 3
-            let amplitudeDeg = 22; // degrees
+            let W = 0,
+                H = 0,
+                dpr = 1;
+            let simTime = 0;
+            let speedFactor = 1.0;
             let isPlaying = true;
-            let simTime = 0; // seconds
-
-            // Pendulum data
-            let pendulums = [];
-
-            // Canvas sizing
-            let W = 0;
-            let H = 0;
-            let dpr = 1;
-
-            // Animation frame
             let rafId = null;
+            let lastTimestamp = 0;
 
-            // ── Pendulum class ──
-            class Pendulum {
-                constructor(index, total, minT, maxT, ampRad) {
-                    this.index = index;
-                    // Period: linearly spaced from minT to maxT
-                    const t = total > 1 ? index / (total - 1) : 0.5;
-                    this.period = minT + t * (maxT - minT);
-                    // Length: L = g * (T / 2π)²
-                    this.length = G * Math.pow(this.period / (2 * Math.PI), 2);
-                    // Amplitude (radians) – same for all
-                    this.amplitude = ampRad;
-                    // Initial angle (all start at amplitude)
-                    this.angle0 = ampRad;
-                    // Horizontal position (set later)
-                    this.pivotX = 0;
-                    // Color (set later)
-                    this.color = '';
+            // ── City parameters ──
+            const BLOCK = 72;
+            const ROAD = 16;
+            const SIDEWALK = 5;
+            const COLS = 7;
+            const ROWS = 7;
+            const GRID_W = COLS * BLOCK + (COLS - 1) * ROAD;
+            const GRID_H = ROWS * BLOCK + (ROWS - 1) * ROAD;
+
+            // ── City data ──
+            let blocks = [];
+            let roads = [];
+            let intersections = [];
+            let buildings = [];
+            let parks = [];
+            let people = [];
+            let cars = [];
+            let trafficLights = [];
+            let crosswalks = [];
+
+            // ── Chat topics ──
+            const CHAT_TOPICS = [
+                'weather', 'weekend plans', 'the game last night', 'new movie',
+                'work project', 'vacation', 'food', 'music', 'politics',
+                'technology', 'sports', 'fashion', 'health', 'education',
+                'travel', 'art', 'books', 'coffee', 'dogs', 'cats'
+            ];
+            const CHAT_PHRASES = {
+                'weather': ['Crazy weather today!', 'Looks like rain.', 'Finally sunny!', 'So humid out.'],
+                'weekend plans': ['Any plans for the weekend?', 'Going hiking Saturday.', 'Movie night?', 'Just relaxing.'],
+                'the game last night': ['Did you watch the game?', 'That was intense!', 'Great play in the 4th.',
+                    'Tough loss.'
+                ],
+                'new movie': ['Seen the new film?', 'Hearing great reviews.', 'Let\'s go watch it.', 'It was amazing!'],
+                'work project': ['Crunch time at work.', 'Big deadline coming.', 'Team is stressed.', 'Almost done.'],
+                'vacation': ['Planning a trip?', 'Wish I was on a beach.', 'Europe sounds nice.', 'Staycation for me.'],
+                'food': ['Hungry?', 'New restaurant opened.', 'Let\'s grab lunch.', 'I love tacos.'],
+                'music': ['New album dropped.', 'Going to the concert?', 'What\'s your favorite band?', 'Play some jazz.'],
+                'sports': ['Great game last night!', 'Who\'s your team?', 'Playoffs are coming.', 'Practice was tough.'],
+                'technology': ['AI is crazy now.', 'New phone came out.', 'Code is broken again.', 'Tech is moving fast.'],
+                'travel': ['Where to next?', 'Love exploring new cities.', 'Road trip!', 'Airport is chaotic.'],
+                'books': ['Reading anything good?', 'Just finished a great novel.', 'Book club tonight.', 'I love sci-fi.'],
+                'coffee': ['Need coffee.', 'This place has great espresso.', 'Latte art is amazing.', 'Coffee run?'],
+                'dogs': ['Cute dog!', 'Walking my pup.', 'Adopted a new dog.', 'Dogs are the best.'],
+                'cats': ['My cat is so lazy.', 'Cats rule.', 'Adopted a kitten.', 'Cat videos are life.']
+            };
+
+            // ── Utility ──
+            function rand(min, max) { return Math.random() * (max - min) + min; }
+
+            function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
+
+            function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+            function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+
+            function lerp(a, b, t) { return a + (b - a) * t; }
+
+            function choose(arr) { return arr[randInt(0, arr.length - 1)]; }
+
+            function removeItem(arr, item) {
+                const idx = arr.indexOf(item);
+                if (idx > -1) arr.splice(idx, 1);
+                return idx > -1;
+            }
+
+            // ── Grid helpers ──
+            function blockCenter(col, row) {
+                return {
+                    x: col * (BLOCK + ROAD) + BLOCK / 2,
+                    y: row * (BLOCK + ROAD) + BLOCK / 2
+                };
+            }
+
+            function roadX(col) {
+                return col * (BLOCK + ROAD) + BLOCK;
+            }
+
+            function roadY(row) {
+                return row * (BLOCK + ROAD) + BLOCK;
+            }
+
+            function isOnRoad(px, py) {
+                for (const r of roads) {
+                    if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return r;
+                }
+                return null;
+            }
+
+            function isOnSidewalk(px, py) {
+                // check if on sidewalk (slightly simplified)
+                for (const r of roads) {
+                    const sw = SIDEWALK;
+                    if (r.horizontal) {
+                        if (py >= r.y - sw && py <= r.y + r.h + sw &&
+                            px >= r.x - sw && px <= r.x + r.w + sw) {
+                            // but not on road itself
+                            if (!(px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h)) {
+                                return r;
+                            }
+                        }
+                    } else {
+                        if (px >= r.x - sw && px <= r.x + r.w + sw &&
+                            py >= r.y - sw && py <= r.y + r.h + sw) {
+                            if (!(px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h)) {
+                                return r;
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+
+            function isInBlock(px, py) {
+                for (const b of blocks) {
+                    if (px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h) return b;
+                }
+                return null;
+            }
+
+            // ── Build city ──
+            function buildCity() {
+                blocks = [];
+                roads = [];
+                intersections = [];
+                buildings = [];
+                parks = [];
+                crosswalks = [];
+
+                // Create blocks
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        const x = c * (BLOCK + ROAD);
+                        const y = r * (BLOCK + ROAD);
+                        const type = (r === 0 && c === 0) ? 'park' :
+                            (r === ROWS - 1 && c === COLS - 1) ? 'park' :
+                            (r === 2 && c === 3) ? 'park' :
+                            (r === 1 && c === 1) ? 'commercial' :
+                            (r === 3 && c === 4) ? 'commercial' :
+                            (r === 4 && c === 2) ? 'commercial' :
+                            (r % 2 === 0 && c % 2 === 0) ? 'residential' :
+                            (r % 2 === 1 && c % 2 === 1) ? 'office' : 'mixed';
+                        blocks.push({
+                            x,
+                            y,
+                            w: BLOCK,
+                            h: BLOCK,
+                            col: c,
+                            row: r,
+                            type,
+                            buildings: [],
+                            trees: type === 'park' ? randInt(6, 14) : randInt(0, 2)
+                        });
+                    }
                 }
 
-                getAngle(t) {
-                    // Simple harmonic motion
-                    const omega = 2 * Math.PI / this.period;
-                    return this.amplitude * Math.cos(omega * t);
+                // Create roads (horizontal and vertical)
+                for (let r = 0; r < ROWS - 1; r++) {
+                    const y = roadY(r);
+                    roads.push({
+                        x: 0,
+                        y: y,
+                        w: GRID_W,
+                        h: ROAD,
+                        horizontal: true,
+                        row: r
+                    });
+                }
+                for (let c = 0; c < COLS - 1; c++) {
+                    const x = roadX(c);
+                    roads.push({
+                        x: x,
+                        y: 0,
+                        w: ROAD,
+                        h: GRID_H,
+                        horizontal: false,
+                        col: c
+                    });
                 }
 
-                getPosition(t, pivotX, pivotY) {
-                    const theta = this.getAngle(t);
-                    const L = this.length;
-                    // Project to screen coordinates
-                    const x = pivotX + L * Math.sin(theta);
-                    const y = pivotY + L * Math.cos(theta);
-                    return { x, y, theta };
+                // Intersections
+                for (let r = 0; r < ROWS - 1; r++) {
+                    for (let c = 0; c < COLS - 1; c++) {
+                        const x = roadX(c);
+                        const y = roadY(r);
+                        intersections.push({
+                            x,
+                            y,
+                            w: ROAD,
+                            h: ROAD,
+                            row: r,
+                            col: c,
+                            light: {
+                                state: 'green', // red, yellow, green
+                                timer: rand(2, 5),
+                                phase: randInt(0, 3) // 0: NS green, 1: EW green, 2: NS yellow, 3: EW yellow
+                            }
+                        });
+                    }
+                }
+
+                // Buildings in blocks
+                for (const block of blocks) {
+                    if (block.type === 'park') continue;
+                    const numBuildings = block.type === 'commercial' ? randInt(2, 4) :
+                        block.type === 'office' ? randInt(1, 3) :
+                        randInt(2, 5);
+                    const bw = block.w / (numBuildings > 1 ? numBuildings : 1) * 0.85;
+                    for (let i = 0; i < numBuildings; i++) {
+                        const bx = block.x + 4 + i * (block.w / numBuildings) + (block.w / numBuildings - bw) / 2;
+                        const by = block.y + 4 + rand(2, 8);
+                        const bh = block.h - 8 - rand(4, 12);
+                        const color = block.type === 'residential' ? `hsl(${randInt(25,45)}, 60%, ${randInt(35,55)}%)` :
+                            block.type === 'commercial' ? `hsl(${randInt(190,220)}, 70%, ${randInt(45,65)}%)` :
+                            block.type === 'office' ? `hsl(${randInt(210,240)}, 50%, ${randInt(50,70)}%)` :
+                            `hsl(${randInt(0,40)}, 30%, ${randInt(40,60)}%)`;
+                        const building = {
+                            x: bx,
+                            y: by,
+                            w: bw * 0.9,
+                            h: bh,
+                            color,
+                            type: block.type,
+                            hasPeople: Math.random() > 0.4,
+                            peopleInside: randInt(0, 3)
+                        };
+                        block.buildings.push(building);
+                        buildings.push(building);
+                    }
+                    // some trees in non-park blocks
+                    if (Math.random() > 0.6) {
+                        block.trees += randInt(1, 3);
+                    }
+                }
+
+                // Crosswalks near intersections
+                for (const inter of intersections) {
+                    const cx = inter.x + inter.w / 2;
+                    const cy = inter.y + inter.h / 2;
+                    // 4 crosswalks around each intersection
+                    const cw = 18;
+                    const ch = 4;
+                    // top
+                    crosswalks.push({ x: cx - cw / 2, y: inter.y - ch, w: cw, h: ch, dir: 'vertical' });
+                    // bottom
+                    crosswalks.push({ x: cx - cw / 2, y: inter.y + inter.h, w: cw, h: ch, dir: 'vertical' });
+                    // left
+                    crosswalks.push({ x: inter.x - ch, y: cy - cw / 2, w: ch, h: cw, dir: 'horizontal' });
+                    // right
+                    crosswalks.push({ x: inter.x + inter.w, y: cy - cw / 2, w: ch, h: cw, dir: 'horizontal' });
                 }
             }
 
-            // ── Initialize pendulums ──
-            function initPendulums() {
-                const ampRad = amplitudeDeg * Math.PI / 180;
-                // Period range: 0.7s … 2.6s (nice visual spread)
-                const T_min = 0.70;
-                const T_max = 2.60;
-                const total = numPendulums;
+            // ── Person class ──
+            class Person {
+                constructor() {
+                    this.radius = 4;
+                    this.speed = rand(18, 35);
+                    this.state = 'walking'; // walking, standing, chatting, working, shopping, relaxing
+                    this.role = choose(['worker', 'shopper', 'resident', 'tourist', 'student']);
+                    this.chatPartner = null;
+                    this.chatTopic = '';
+                    this.chatTimer = 0;
+                    this.chatBubble = '';
+                    this.bubbleTimer = 0;
 
-                pendulums = [];
-                for (let i = 0; i < total; i++) {
-                    const p = new Pendulum(i, total, T_min, T_max, ampRad);
-                    // Color: HSL from 210° (blue) to 340° (pink) with high saturation
-                    const hue = 210 + (i / (total - 1 || 1)) * 130;
-                    p.color = `hsl(${hue}, 80%, 62%)`;
-                    pendulums.push(p);
+                    // Spawn on sidewalk or in park
+                    this.spawn();
+                    this.target = this.pickTarget();
+                    this.walkTimer = rand(2, 8);
+                    this.stateTimer = 0;
+                    this.angle = rand(0, Math.PI * 2);
+                    this.color = `hsl(${randInt(0,360)}, 70%, ${randInt(55,75)}%)`;
+                    this.hairColor = `hsl(${randInt(20,40)}, 60%, ${randInt(20,40)}%)`;
+                    this.isChatting = false;
+                }
+
+                spawn() {
+                    // try to spawn on a sidewalk or in a park
+                    const attempts = 50;
+                    for (let i = 0; i < attempts; i++) {
+                        const px = rand(10, GRID_W - 10);
+                        const py = rand(10, GRID_H - 10);
+                        const sw = isOnSidewalk(px, py);
+                        if (sw) {
+                            this.x = px;
+                            this.y = py;
+                            return;
+                        }
+                        const block = isInBlock(px, py);
+                        if (block && block.type === 'park') {
+                            this.x = px;
+                            this.y = py;
+                            return;
+                        }
+                    }
+                    // fallback
+                    this.x = rand(20, GRID_W - 20);
+                    this.y = rand(20, GRID_H - 20);
+                }
+
+                pickTarget() {
+                    const attempts = 30;
+                    for (let i = 0; i < attempts; i++) {
+                        const tx = rand(10, GRID_W - 10);
+                        const ty = rand(10, GRID_H - 10);
+                        const sw = isOnSidewalk(tx, ty);
+                        if (sw) return { x: tx, y: ty };
+                        const block = isInBlock(tx, ty);
+                        if (block && block.type === 'park') return { x: tx, y: ty };
+                        // also allow standing near buildings
+                        if (block && block.buildings.length > 0) return { x: tx, y: ty };
+                    }
+                    return { x: rand(20, GRID_W - 20), y: rand(20, GRID_H - 20) };
+                }
+
+                update(dt) {
+                    if (this.isChatting) {
+                        this.chatTimer += dt;
+                        if (this.chatTimer > 4 + rand(0, 3)) {
+                            this.isChatting = false;
+                            this.chatPartner = null;
+                            this.state = 'walking';
+                            this.target = this.pickTarget();
+                            this.bubbleTimer = 0;
+                        }
+                        if (this.chatTimer > 0.5 && this.bubbleTimer === 0) {
+                            this.bubbleTimer = 1.5;
+                            this.chatBubble = this.generateChat();
+                        }
+                        this.bubbleTimer = Math.max(0, this.bubbleTimer - dt);
+                        return;
+                    }
+
+                    this.stateTimer += dt;
+
+                    // Change behavior periodically
+                    if (this.stateTimer > this.walkTimer + rand(0, 3)) {
+                        this.stateTimer = 0;
+                        this.walkTimer = rand(2, 8);
+
+                        // Chance to start chatting if near someone
+                        if (Math.random() > 0.6) {
+                            const nearby = people.filter(p => p !== this && !p.isChatting && dist(p, this) < 50);
+                            if (nearby.length > 0) {
+                                const partner = choose(nearby);
+                                this.isChatting = true;
+                                this.chatPartner = partner;
+                                partner.isChatting = true;
+                                partner.chatPartner = this;
+                                this.chatTimer = 0;
+                                partner.chatTimer = 0;
+                                this.state = 'chatting';
+                                partner.state = 'chatting';
+                                this.bubbleTimer = 1.5;
+                                this.chatBubble = this.generateChat();
+                                return;
+                            }
+                        }
+
+                        // Change target
+                        if (Math.random() > 0.3) {
+                            this.target = this.pickTarget();
+                            this.state = 'walking';
+                        } else {
+                            this.state = 'standing';
+                            // stand for a bit
+                            this.walkTimer = rand(1, 4);
+                        }
+                    }
+
+                    if (this.state === 'walking') {
+                        const dx = this.target.x - this.x;
+                        const dy = this.target.y - this.y;
+                        const d = Math.hypot(dx, dy);
+                        if (d < 3) {
+                            this.target = this.pickTarget();
+                        } else {
+                            const step = this.speed * dt;
+                            const ratio = Math.min(step / d, 1);
+                            this.x += dx * ratio;
+                            this.y += dy * ratio;
+                            this.angle = Math.atan2(dy, dx);
+                        }
+                    } else if (this.state === 'standing') {
+                        // just stand
+                    } else if (this.state === 'working' || this.state === 'shopping' || this.state === 'relaxing') {
+                        // stay in place
+                    }
+                }
+
+                generateChat() {
+                    const topic = choose(CHAT_TOPICS);
+                    const phrases = CHAT_PHRASES[topic] || ['Hello!', 'How are you?', 'Nice day.'];
+                    return choose(phrases);
+                }
+
+                draw(ctx) {
+                    const x = this.x,
+                        y = this.y;
+
+                    // Shadow
+                    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                    ctx.shadowBlur = 6;
+
+                    // Body (circle with slight direction)
+                    ctx.shadowBlur = 10;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(x, y, this.radius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Hair / hat
+                    ctx.shadowBlur = 4;
+                    ctx.fillStyle = this.hairColor;
+                    ctx.beginPath();
+                    ctx.arc(x - 2, y - 3, this.radius * 0.6, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Eyes (direction)
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#222';
+                    const ex = x + Math.cos(this.angle) * 2.5;
+                    const ey = y + Math.sin(this.angle) * 2.5 - 1.5;
+                    ctx.beginPath();
+                    ctx.arc(ex - 2, ey, 1.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(ex + 2, ey, 1.2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Chat bubble
+                    if (this.isChatting && this.bubbleTimer > 0) {
+                        ctx.shadowBlur = 20;
+                        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                        const bx = x - 20;
+                        const by = y - 28;
+                        const bw = Math.min(70, this.chatBubble.length * 6 + 16);
+                        const bh = 18;
+                        // bubble background
+                        ctx.fillStyle = 'rgba(30,40,60,0.92)';
+                        ctx.strokeStyle = 'rgba(200,220,255,0.15)';
+                        ctx.lineWidth = 1;
+                        roundRect(ctx, bx, by, bw, bh, 8);
+                        ctx.fill();
+                        ctx.stroke();
+                        // text
+                        ctx.shadowBlur = 0;
+                        ctx.fillStyle = '#d6e3f0';
+                        ctx.font = '10px "Segoe UI", system-ui, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        const displayText = this.chatBubble.length > 14 ? this.chatBubble.slice(0, 14) + '…' : this
+                        .chatBubble;
+                        ctx.fillText(displayText, bx + bw / 2, by + bh / 2);
+                    }
+
+                    ctx.shadowBlur = 0;
                 }
             }
 
-            // ── Resize canvas ──
-            function resizeCanvas() {
+            // ── Car class ──
+            class Car {
+                constructor() {
+                    this.w = 12;
+                    this.h = 7;
+                    this.speed = rand(30, 70);
+                    this.maxSpeed = rand(50, 90);
+                    this.accel = rand(40, 80);
+                    this.color = `hsl(${randInt(0,360)}, 60%, ${randInt(35,55)}%)`;
+                    this.direction = 0; // angle in radians
+                    this.onRoad = null;
+                    this.targetRoad = null;
+                    this.waypoints = [];
+                    this.currentWaypoint = 0;
+                    this.stopped = false;
+                    this.stopTimer = 0;
+                    this.passengers = randInt(0, 3);
+                    this.honkTimer = 0;
+
+                    this.spawn();
+                    this.pickRoute();
+                }
+
+                spawn() {
+                    // spawn on a random road
+                    const road = choose(roads);
+                    this.onRoad = road;
+                    if (road.horizontal) {
+                        this.x = rand(road.x + 4, road.x + road.w - 4);
+                        this.y = road.y + road.h / 2;
+                        this.direction = Math.random() > 0.5 ? 0 : Math.PI;
+                    } else {
+                        this.x = road.x + road.w / 2;
+                        this.y = rand(road.y + 4, road.y + road.h - 4);
+                        this.direction = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
+                    }
+                }
+
+                pickRoute() {
+                    // pick a random destination road
+                    const dest = choose(roads);
+                    if (dest === this.onRoad && roads.length > 1) {
+                        // pick another
+                        const others = roads.filter(r => r !== this.onRoad);
+                        if (others.length > 0) this.targetRoad = choose(others);
+                        else this.targetRoad = this.onRoad;
+                    } else {
+                        this.targetRoad = dest;
+                    }
+                    // waypoints: drive to intersection, turn, drive to target
+                    this.waypoints = [];
+                    this.currentWaypoint = 0;
+                    // Simple: go to nearest intersection, then to target road
+                    const inter = this.findNearestIntersection();
+                    if (inter) {
+                        this.waypoints.push({ x: inter.x + inter.w / 2, y: inter.y + inter.h / 2 });
+                    }
+                    if (this.targetRoad) {
+                        const tx = this.targetRoad.horizontal ?
+                            rand(this.targetRoad.x + 10, this.targetRoad.x + this.targetRoad.w - 10) :
+                            this.targetRoad.x + this.targetRoad.w / 2;
+                        const ty = this.targetRoad.horizontal ?
+                            this.targetRoad.y + this.targetRoad.h / 2 :
+                            rand(this.targetRoad.y + 10, this.targetRoad.y + this.targetRoad.h - 10);
+                        this.waypoints.push({ x: tx, y: ty });
+                    }
+                }
+
+                findNearestIntersection() {
+                    let nearest = null;
+                    let minDist = Infinity;
+                    for (const inter of intersections) {
+                        const cx = inter.x + inter.w / 2;
+                        const cy = inter.y + inter.h / 2;
+                        const d = dist(this, { x: cx, y: cy });
+                        if (d < minDist) {
+                            minDist = d;
+                            nearest = inter;
+                        }
+                    }
+                    return nearest;
+                }
+
+                update(dt) {
+                    if (this.stopped) {
+                        this.stopTimer -= dt;
+                        if (this.stopTimer <= 0) {
+                            this.stopped = false;
+                        }
+                        return;
+                    }
+
+                    if (this.waypoints.length === 0 || this.currentWaypoint >= this.waypoints.length) {
+                        // reached destination, pick new route
+                        this.pickRoute();
+                        if (this.waypoints.length === 0) return;
+                    }
+
+                    const target = this.waypoints[this.currentWaypoint];
+                    const dx = target.x - this.x;
+                    const dy = target.y - this.y;
+                    const d = Math.hypot(dx, dy);
+
+                    if (d < 5) {
+                        this.currentWaypoint++;
+                        if (this.currentWaypoint >= this.waypoints.length) {
+                            this.pickRoute();
+                            this.currentWaypoint = 0;
+                        }
+                        return;
+                    }
+
+                    // Check traffic lights
+                    const inter = this.getNearbyIntersection();
+                    if (inter) {
+                        const light = inter.light;
+                        const isNS = Math.abs(this.direction) < 0.3 || Math.abs(this.direction - Math.PI) < 0.3;
+                        const isEW = Math.abs(this.direction - Math.PI / 2) < 0.3 || Math.abs(this.direction + Math.PI / 2) <
+                            0.3;
+                        const facingNS = isNS;
+                        const facingEW = isEW;
+                        // Check if light is red for this direction
+                        const lightState = light.state;
+                        const distToInter = dist(this, { x: inter.x + inter.w / 2, y: inter.y + inter.h / 2 });
+                        if (distToInter < 25) {
+                            if ((facingNS && lightState === 'red') || (facingEW && lightState === 'red')) {
+                                this.stopped = true;
+                                this.stopTimer = 0.3 + rand(0, 0.5);
+                                return;
+                            }
+                            if ((facingNS && lightState === 'yellow') || (facingEW && lightState === 'yellow')) {
+                                this.speed *= 0.5;
+                            }
+                        }
+                    }
+
+                    // Move toward target
+                    const angle = Math.atan2(dy, dx);
+                    const diff = angle - this.direction;
+                    const turnSpeed = 4.5;
+                    if (diff > 0.1) this.direction += Math.min(diff, turnSpeed * dt);
+                    else if (diff < -0.1) this.direction += Math.max(diff, -turnSpeed * dt);
+
+                    // Speed up / slow down
+                    const targetSpeed = Math.min(this.maxSpeed, d / 0.5);
+                    this.speed += (targetSpeed - this.speed) * 0.05;
+                    this.speed = clamp(this.speed, 5, this.maxSpeed);
+
+                    const step = this.speed * dt;
+                    const ratio = Math.min(step / d, 1);
+                    this.x += dx * ratio;
+                    this.y += dy * ratio;
+
+                    // Keep on road (slight correction)
+                    const road = isOnRoad(this.x, this.y);
+                    if (!road) {
+                        // drift back toward road
+                        const nearest = this.findNearestRoad();
+                        if (nearest) {
+                            const cx = nearest.horizontal ? this.x : nearest.x + nearest.w / 2;
+                            const cy = nearest.horizontal ? nearest.y + nearest.h / 2 : this.y;
+                            this.x += (cx - this.x) * 0.02;
+                            this.y += (cy - this.y) * 0.02;
+                        }
+                    }
+                }
+
+                findNearestRoad() {
+                    let nearest = null;
+                    let minDist = Infinity;
+                    for (const r of roads) {
+                        const cx = r.horizontal ? this.x : r.x + r.w / 2;
+                        const cy = r.horizontal ? r.y + r.h / 2 : this.y;
+                        const d = dist({ x: cx, y: cy }, this);
+                        if (d < minDist) {
+                            minDist = d;
+                            nearest = r;
+                        }
+                    }
+                    return nearest;
+                }
+
+                getNearbyIntersection() {
+                    for (const inter of intersections) {
+                        const cx = inter.x + inter.w / 2;
+                        const cy = inter.y + inter.h / 2;
+                        if (dist(this, { x: cx, y: cy }) < 30) return inter;
+                    }
+                    return null;
+                }
+
+                draw(ctx) {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.direction);
+
+                    // Shadow
+                    ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                    ctx.shadowBlur = 12;
+
+                    // Car body
+                    const w = this.w,
+                        h = this.h;
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 8;
+                    roundRect(ctx, -w / 2, -h / 2, w, h, 3);
+                    ctx.fill();
+
+                    // Windshield
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'rgba(150,210,255,0.25)';
+                    ctx.fillRect(-w / 2 + 2, -h / 2 + 1.5, w * 0.3, h - 3);
+
+                    // Headlights
+                    ctx.fillStyle = 'rgba(255,240,200,0.5)';
+                    ctx.fillRect(w / 2 - 1, -h / 2 + 1, 2, 2);
+                    ctx.fillRect(w / 2 - 1, h / 2 - 3, 2, 2);
+
+                    // Taillights
+                    ctx.fillStyle = 'rgba(255,60,60,0.5)';
+                    ctx.fillRect(-w / 2 - 1, -h / 2 + 1, 2, 2);
+                    ctx.fillRect(-w / 2 - 1, h / 2 - 3, 2, 2);
+
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+                }
+            }
+
+            // ── Traffic light system ──
+            function updateTrafficLights(dt) {
+                for (const inter of intersections) {
+                    const light = inter.light;
+                    light.timer -= dt;
+                    if (light.timer <= 0) {
+                        // Cycle: green -> yellow -> red -> green
+                        if (light.state === 'green') {
+                            light.state = 'yellow';
+                            light.timer = 1.0 + rand(0, 0.5);
+                        } else if (light.state === 'yellow') {
+                            light.state = 'red';
+                            light.timer = 1.5 + rand(0, 1);
+                        } else {
+                            light.state = 'green';
+                            light.timer = 3.0 + rand(0, 2);
+                        }
+                    }
+                }
+            }
+
+            // ── Draw helpers ──
+            function roundRect(ctx, x, y, w, h, r) {
+                r = Math.min(r, w / 2, h / 2);
+                ctx.beginPath();
+                ctx.moveTo(x + r, y);
+                ctx.lineTo(x + w - r, y);
+                ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+                ctx.lineTo(x + w, y + h - r);
+                ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                ctx.lineTo(x + r, y + h);
+                ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+                ctx.lineTo(x, y + r);
+                ctx.quadraticCurveTo(x, y, x + r, y);
+                ctx.closePath();
+            }
+
+            // ── Render ──
+            function render() {
+                ctx.clearRect(0, 0, W, H);
+
+                // ── Background ──
+                ctx.fillStyle = '#1a2538';
+                ctx.fillRect(0, 0, W, H);
+
+                // ── Grid / blocks ──
+                for (const block of blocks) {
+                    // Block background
+                    if (block.type === 'park') {
+                        ctx.fillStyle = '#2a4a3a';
+                        ctx.fillRect(block.x, block.y, block.w, block.h);
+                        // grass texture
+                        for (let i = 0; i < block.trees; i++) {
+                            const tx = block.x + rand(4, block.w - 4);
+                            const ty = block.y + rand(4, block.h - 4);
+                            ctx.fillStyle = `hsl(${randInt(100,140)}, 60%, ${randInt(30,50)}%)`;
+                            ctx.beginPath();
+                            ctx.arc(tx, ty, rand(3, 7), 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.fillStyle = `hsl(${randInt(20,35)}, 50%, ${randInt(25,40)}%)`;
+                            ctx.fillRect(tx - 1, ty + 2, 2, 4);
+                        }
+                    } else {
+                        ctx.fillStyle = '#1f2a3f';
+                        ctx.fillRect(block.x, block.y, block.w, block.h);
+                        // subtle grid lines
+                        ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                        ctx.lineWidth = 0.5;
+                        ctx.strokeRect(block.x, block.y, block.w, block.h);
+                    }
+
+                    // Buildings
+                    for (const b of block.buildings) {
+                        ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                        ctx.shadowBlur = 10;
+                        ctx.fillStyle = b.color;
+                        roundRect(ctx, b.x, b.y, b.w, b.h, 2);
+                        ctx.fill();
+                        // Windows
+                        ctx.shadowBlur = 0;
+                        const wc = Math.floor(b.w / 10);
+                        const hc = Math.floor(b.h / 10);
+                        for (let wi = 0; wi < wc && wi < 5; wi++) {
+                            for (let hi = 0; hi < hc && hi < 5; hi++) {
+                                const lit = Math.random() > 0.4;
+                                ctx.fillStyle = lit ? 'rgba(255,240,200,0.25)' : 'rgba(100,120,160,0.15)';
+                                const wx = b.x + 3 + wi * (b.w - 6) / Math.min(wc, 5);
+                                const wy = b.y + 3 + hi * (b.h - 6) / Math.min(hc, 5);
+                                ctx.fillRect(wx, wy, 3, 4);
+                            }
+                        }
+                    }
+
+                    // Trees in non-park blocks
+                    if (block.type !== 'park') {
+                        for (let i = 0; i < block.trees; i++) {
+                            const tx = block.x + rand(4, block.w - 4);
+                            const ty = block.y + rand(4, block.h - 4);
+                            ctx.fillStyle = `hsl(${randInt(110,150)}, 50%, ${randInt(25,40)}%)`;
+                            ctx.beginPath();
+                            ctx.arc(tx, ty, rand(2, 5), 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                }
+
+                // ── Roads ──
+                for (const road of roads) {
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#2a3048';
+                    ctx.fillRect(road.x, road.y, road.w, road.h);
+                    // Road markings
+                    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+                    if (road.horizontal) {
+                        const dashLen = 12,
+                            gapLen = 16;
+                        for (let x = road.x + 2; x < road.x + road.w - 2; x += dashLen + gapLen) {
+                            ctx.fillRect(x, road.y + road.h / 2 - 1, dashLen, 2);
+                        }
+                    } else {
+                        const dashLen = 12,
+                            gapLen = 16;
+                        for (let y = road.y + 2; y < road.y + road.h - 2; y += dashLen + gapLen) {
+                            ctx.fillRect(road.x + road.w / 2 - 1, y, 2, dashLen);
+                        }
+                    }
+                    // Road edge
+                    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+                    if (road.horizontal) {
+                        ctx.fillRect(road.x, road.y, road.w, 1);
+                        ctx.fillRect(road.x, road.y + road.h - 1, road.w, 1);
+                    } else {
+                        ctx.fillRect(road.x, road.y, 1, road.h);
+                        ctx.fillRect(road.x + road.w - 1, road.y, 1, road.h);
+                    }
+                }
+
+                // ── Crosswalks ──
+                for (const cw of crosswalks) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                    if (cw.dir === 'vertical') {
+                        for (let i = 0; i < 4; i++) {
+                            ctx.fillRect(cw.x + i * (cw.w / 4), cw.y, cw.w / 8, cw.h);
+                        }
+                    } else {
+                        for (let i = 0; i < 4; i++) {
+                            ctx.fillRect(cw.x, cw.y + i * (cw.h / 4), cw.w, cw.h / 8);
+                        }
+                    }
+                }
+
+                // ── Traffic lights ──
+                for (const inter of intersections) {
+                    const cx = inter.x + inter.w / 2;
+                    const cy = inter.y + inter.h / 2;
+                    const light = inter.light;
+                    const states = ['green', 'yellow', 'red'];
+                    const colors = { green: '#3ad08a', yellow: '#f0d040', red: '#e05050' };
+                    // Draw 4 traffic lights
+                    const positions = [
+                        { x: cx - 10, y: cy - 10 },
+                        { x: cx + 10, y: cy - 10 },
+                        { x: cx - 10, y: cy + 10 },
+                        { x: cx + 10, y: cy + 10 }
+                    ];
+                    for (const pos of positions) {
+                        ctx.shadowBlur = 8;
+                        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                        ctx.fillStyle = '#1a2035';
+                        ctx.fillRect(pos.x - 3, pos.y - 7, 6, 14);
+                        // light circle
+                        ctx.shadowBlur = 12;
+                        ctx.shadowColor = colors[light.state] + '44';
+                        ctx.fillStyle = colors[light.state];
+                        ctx.beginPath();
+                        ctx.arc(pos.x, pos.y, 3.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        // glow
+                        ctx.shadowBlur = 30;
+                        ctx.shadowColor = colors[light.state] + '22';
+                        ctx.beginPath();
+                        ctx.arc(pos.x, pos.y, 5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.shadowBlur = 0;
+                }
+
+                // ── Cars ──
+                for (const car of cars) {
+                    car.draw(ctx);
+                }
+
+                // ── People ──
+                for (const person of people) {
+                    person.draw(ctx);
+                }
+
+                // ── Stats overlay ──
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(6, 6, 120, 18);
+                ctx.fillStyle = 'rgba(200,220,255,0.15)';
+                ctx.font = '10px "Segoe UI", sans-serif';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(`🚶 ${people.length}  🚗 ${cars.length}  ⚡ ${Math.round(speedFactor*100)}%`, 12, 8);
+
+                // Laws display
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(W - 170, 6, 164, 18);
+                ctx.fillStyle = 'rgba(200,220,255,0.15)';
+                ctx.textAlign = 'right';
+                const lawStatus = '🚦 Traffic laws active · ⚖️ AI citizens';
+                ctx.fillText(lawStatus, W - 12, 8);
+            }
+
+            // ── Spawn people and cars ──
+            function spawnPeople() {
+                const target = Math.min(65, 35 + Math.floor(people.length * 0.02));
+                while (people.length < target) {
+                    people.push(new Person());
+                }
+                // Remove excess
+                while (people.length > target) {
+                    people.pop();
+                }
+            }
+
+            function spawnCars() {
+                const target = Math.min(22, 10 + Math.floor(cars.length * 0.02));
+                while (cars.length < target) {
+                    cars.push(new Car());
+                }
+                while (cars.length > target) {
+                    cars.pop();
+                }
+            }
+
+            // ── Update ──
+            function update(dt) {
+                const speed = speedFactor;
+                const dt_scaled = dt * speed;
+
+                // Update people
+                for (const person of people) {
+                    person.update(dt_scaled);
+                }
+
+                // Update cars
+                for (const car of cars) {
+                    car.update(dt_scaled);
+                }
+
+                // Update traffic lights
+                updateTrafficLights(dt_scaled);
+
+                // Update sim time
+                simTime += dt_scaled;
+                const mins = Math.floor(simTime / 60);
+                const secs = Math.floor(simTime % 60);
+                timeDisplay.textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
+
+                // Update stats
+                peopleCountEl.textContent = people.length;
+                carCountEl.textContent = cars.length;
+
+                // Spawn management
+                spawnPeople();
+                spawnCars();
+            }
+
+            // ── Loop ──
+            function loop(timestamp) {
+                if (!isPlaying) {
+                    rafId = requestAnimationFrame(loop);
+                    return;
+                }
+                if (lastTimestamp === 0) lastTimestamp = timestamp;
+                let dt = (timestamp - lastTimestamp) / 1000;
+                lastTimestamp = timestamp;
+                dt = Math.min(dt, 0.05);
+
+                update(dt);
+                render();
+
+                rafId = requestAnimationFrame(loop);
+            }
+
+            // ── Resize ──
+            function resize() {
                 const rect = canvas.getBoundingClientRect();
                 dpr = window.devicePixelRatio || 1;
                 W = rect.width;
                 H = rect.height;
                 canvas.width = W * dpr;
                 canvas.height = H * dpr;
-                ctx.scale(dpr, dpr);
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                // Scale city to fit canvas
+                const scaleX = (W - 20) / GRID_W;
+                const scaleY = (H - 20) / GRID_H;
+                const scale = Math.min(scaleX, scaleY, 1.2);
+                const offsetX = (W - GRID_W * scale) / 2;
+                const offsetY = (H - GRID_H * scale) / 2;
+                // Store transform for drawing
+                ctx.save();
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                ctx.restore();
+                // We'll handle scaling in render by applying transform
+                // Actually simpler: keep city at fixed size and scale canvas
+                // Just use the canvas size directly
             }
 
-            // ── Layout ──
-            function getLayout() {
-                const padX = W * 0.045;
-                const padY = H * 0.06;
-                const topY = padY + H * 0.04;
-                const bottomY = H - padY - H * 0.02;
-                const usableW = W - 2 * padX;
-                const spacing = usableW / (numPendulums - 1 || 1);
-                const maxLen = (bottomY - topY) * 0.88;
-                return { padX, topY, bottomY, spacing, maxLen };
-            }
-
-            // ── Draw ──
-            function draw() {
-                const layout = getLayout();
-                const { padX, topY, bottomY, spacing, maxLen } = layout;
-
-                // Clear
-                ctx.clearRect(0, 0, W, H);
-
-                // ── Background subtle grid ──
-                ctx.save();
-                ctx.globalAlpha = 0.06;
-                ctx.strokeStyle = '#7a9bcb';
-                ctx.lineWidth = 0.5;
-                for (let x = 0; x < W; x += 40) {
-                    ctx.beginPath();
-                    ctx.moveTo(x, 0);
-                    ctx.lineTo(x, H);
-                    ctx.stroke();
-                }
-                for (let y = 0; y < H; y += 40) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, y);
-                    ctx.lineTo(W, y);
-                    ctx.stroke();
-                }
-                ctx.restore();
-
-                // ── Reference line (equilibrium) ──
-                ctx.save();
-                ctx.globalAlpha = 0.10;
-                ctx.strokeStyle = '#7a9bcb';
-                ctx.lineWidth = 0.8;
-                ctx.setLineDash([6, 10]);
-                ctx.beginPath();
-                ctx.moveTo(padX - 8, bottomY);
-                ctx.lineTo(W - padX + 8, bottomY);
-                ctx.stroke();
-                ctx.restore();
-
-                // ── Compute bob positions ──
-                const positions = [];
-                for (let i = 0; i < numPendulums; i++) {
-                    const p = pendulums[i];
-                    const pivotX = padX + i * spacing;
-                    // Scale length to fit canvas
-                    const scale = maxLen / (p.length || 1);
-                    const L_scaled = p.length * scale;
-                    // Use scaled length for drawing, but keep physical length for physics
-                    const theta = p.getAngle(simTime * speedFactor);
-                    const bobX = pivotX + L_scaled * Math.sin(theta);
-                    const bobY = bottomY - L_scaled * (1 - Math.cos(theta));
-                    positions.push({
-                        index: i,
-                        pivotX,
-                        pivotY: bottomY,
-                        bobX,
-                        bobY,
-                        theta,
-                        L_scaled,
-                        color: p.color,
-                        period: p.period,
-                    });
-                }
-
-                // ── Draw pendulum strings ──
-                ctx.save();
-                for (const pos of positions) {
-                    const alpha = 0.25 + 0.15 * (1 - Math.abs(pos.theta) / (amplitudeDeg * Math.PI / 180 + 0.01));
-                    ctx.globalAlpha = Math.min(alpha, 0.55);
-                    ctx.strokeStyle = '#b0cce8';
-                    ctx.lineWidth = 1.2;
-                    ctx.beginPath();
-                    ctx.moveTo(pos.pivotX, pos.pivotY);
-                    ctx.lineTo(pos.bobX, pos.bobY);
-                    ctx.stroke();
-                }
-                ctx.restore();
-
-                // ── Draw bobs (with glow) ──
-                for (const pos of positions) {
-                    const radius = Math.max(4, 7 + 2.5 * (1 - pos.index / numPendulums));
-
-                    // Glow
-                    const grad = ctx.createRadialGradient(pos.bobX, pos.bobY, 0, pos.bobX, pos.bobY, radius * 3.2);
-                    const col = pos.color;
-                    grad.addColorStop(0, col);
-                    grad.addColorStop(0.3, col + '88');
-                    grad.addColorStop(1, col + '00');
-                    ctx.save();
-                    ctx.globalAlpha = 0.30;
-                    ctx.fillStyle = grad;
-                    ctx.beginPath();
-                    ctx.arc(pos.bobX, pos.bobY, radius * 3.2, 0, 2 * Math.PI);
-                    ctx.fill();
-                    ctx.restore();
-
-                    // Bob body
-                    ctx.save();
-                    ctx.shadowColor = pos.color;
-                    ctx.shadowBlur = 18;
-                    ctx.fillStyle = pos.color;
-                    ctx.beginPath();
-                    ctx.arc(pos.bobX, pos.bobY, radius, 0, 2 * Math.PI);
-                    ctx.fill();
-
-                    // Inner highlight
-                    ctx.shadowBlur = 0;
-                    const hl = ctx.createRadialGradient(
-                        pos.bobX - radius * 0.3, pos.bobY - radius * 0.35, 0,
-                        pos.bobX, pos.bobY, radius
-                    );
-                    hl.addColorStop(0, 'rgba(255,255,255,0.50)');
-                    hl.addColorStop(0.4, 'rgba(255,255,255,0.10)');
-                    hl.addColorStop(1, 'rgba(255,255,255,0)');
-                    ctx.fillStyle = hl;
-                    ctx.beginPath();
-                    ctx.arc(pos.bobX, pos.bobY, radius, 0, 2 * Math.PI);
-                    ctx.fill();
-
-                    // Rim
-                    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
-                    ctx.lineWidth = 0.6;
-                    ctx.beginPath();
-                    ctx.arc(pos.bobX, pos.bobY, radius, 0, 2 * Math.PI);
-                    ctx.stroke();
-
-                    ctx.restore();
-                }
-
-                // ── Draw pivot mounts ──
-                ctx.save();
-                for (const pos of positions) {
-                    ctx.globalAlpha = 0.30;
-                    ctx.fillStyle = '#5a7a9a';
-                    ctx.beginPath();
-                    ctx.arc(pos.pivotX, pos.pivotY, 3, 0, 2 * Math.PI);
-                    ctx.fill();
-                }
-                ctx.restore();
-
-                // ── Wave chart at bottom ──
-                drawWaveChart(positions, padX, bottomY + 18, W - 2 * padX, 52);
-            }
-
-            // ── Wave chart ──
-            function drawWaveChart(positions, x0, y0, width, height) {
-                if (positions.length < 2) return;
-
-                const pad = 6;
-                const chartW = width - 2 * pad;
-                const chartH = height - 2 * pad;
-                const cx = x0 + pad;
-                const cy = y0 + pad;
-
-                // Background
-                ctx.save();
-                ctx.globalAlpha = 0.08;
-                ctx.fillStyle = '#4a6a8a';
-                ctx.roundRect ? ctx.roundRect(x0, y0, width, height, 6) : ctx.rect(x0, y0, width, height);
-                ctx.fill();
-                ctx.restore();
-
-                // Horizontal center line
-                ctx.save();
-                ctx.globalAlpha = 0.12;
-                ctx.strokeStyle = '#7a9bcb';
-                ctx.lineWidth = 0.6;
-                ctx.setLineDash([3, 6]);
-                ctx.beginPath();
-                ctx.moveTo(cx, cy + chartH / 2);
-                ctx.lineTo(cx + chartW, cy + chartH / 2);
-                ctx.stroke();
-                ctx.restore();
-
-                if (positions.length < 2) return;
-
-                // Find max displacement for scaling
-                let maxDisp = 0;
-                for (const pos of positions) {
-                    const disp = Math.abs(pos.bobX - pos.pivotX);
-                    if (disp > maxDisp) maxDisp = disp;
-                }
-                if (maxDisp < 0.001) maxDisp = 0.001;
-
-                // Scale factor: map displacement to chart height
-                const scaleY = (chartH * 0.42) / maxDisp;
-
-                // Draw wave line
-                ctx.save();
-                ctx.beginPath();
-                for (let i = 0; i < positions.length; i++) {
-                    const pos = positions[i];
-                    const x = cx + (i / (positions.length - 1)) * chartW;
-                    const disp = pos.bobX - pos.pivotX;
-                    const y = cy + chartH / 2 - disp * scaleY;
-                    if (i === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                }
-                ctx.strokeStyle = '#8ab8e8';
-                ctx.lineWidth = 2.0;
-                ctx.shadowColor = '#5a9ad0';
-                ctx.shadowBlur = 12;
-                ctx.stroke();
-                ctx.restore();
-
-                // Fill under curve
-                ctx.save();
-                ctx.beginPath();
-                for (let i = 0; i < positions.length; i++) {
-                    const pos = positions[i];
-                    const x = cx + (i / (positions.length - 1)) * chartW;
-                    const disp = pos.bobX - pos.pivotX;
-                    const y = cy + chartH / 2 - disp * scaleY;
-                    if (i === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                }
-                ctx.lineTo(cx + chartW, cy + chartH / 2);
-                ctx.lineTo(cx, cy + chartH / 2);
-                ctx.closePath();
-                const grad = ctx.createLinearGradient(0, cy, 0, cy + chartH);
-                grad.addColorStop(0, 'rgba(100, 180, 240, 0.15)');
-                grad.addColorStop(0.5, 'rgba(100, 180, 240, 0.04)');
-                grad.addColorStop(1, 'rgba(100, 180, 240, 0)');
-                ctx.fillStyle = grad;
-                ctx.fill();
-                ctx.restore();
-
-                // Dot markers
-                ctx.save();
-                for (let i = 0; i < positions.length; i += Math.max(1, Math.floor(positions.length / 12))) {
-                    const pos = positions[i];
-                    const x = cx + (i / (positions.length - 1)) * chartW;
-                    const disp = pos.bobX - pos.pivotX;
-                    const y = cy + chartH / 2 - disp * scaleY;
-                    ctx.globalAlpha = 0.40;
-                    ctx.fillStyle = pos.color || '#8ab8e8';
-                    ctx.beginPath();
-                    ctx.arc(x, y, 2.5, 0, 2 * Math.PI);
-                    ctx.fill();
-                }
-                ctx.restore();
-
-                // Label
-                ctx.save();
-                ctx.globalAlpha = 0.25;
-                ctx.fillStyle = '#7a9bcb';
-                ctx.font = '9px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'bottom';
-                ctx.fillText('wave pattern', cx + chartW / 2, y0 + height - 2);
-                ctx.restore();
-            }
-
-            // ── Animation loop ──
-            function animate(timestamp) {
-                if (!isPlaying) {
-                    rafId = requestAnimationFrame(animate);
-                    return;
-                }
-
-                // Update time (fixed step ~ 1/60)
-                const dt = 1 / 60;
-                simTime += dt;
-
-                // Update display
-                timeDisplay.textContent = simTime.toFixed(2);
-
-                // Update status
-                updateStatus();
-
-                // Draw
-                draw();
-
-                rafId = requestAnimationFrame(animate);
-            }
-
-            // ── Status badge ──
-            function updateStatus() {
-                if (numPendulums < 2) {
-                    statusBadge.innerHTML = '<span class="highlight">○</span> idle';
-                    return;
-                }
-                // Check if pendulums are roughly in phase (simple heuristic)
-                const ref = pendulums[0]?.getAngle(simTime * speedFactor) || 0;
-                let sumDiff = 0;
-                for (const p of pendulums) {
-                    const a = p.getAngle(simTime * speedFactor);
-                    sumDiff += Math.abs(a - ref);
-                }
-                const avgDiff = sumDiff / numPendulums;
-                const threshold = 0.06; // radians
-                const isSynced = avgDiff < threshold;
-                const icon = isSynced ? '◆' : '●';
-                const label = isSynced ? 'synced' : 'wave';
-                const color = isSynced ? '#7ad0a0' : '#b8d4f0';
-                statusBadge.innerHTML = `<span class="highlight" style="color:${color}">${icon}</span> ${label}`;
-            }
-
-            // ── Reset simulation ──
-            function resetSim() {
+            // ── Rebuild city ──
+            function rebuildCity() {
+                buildCity();
+                people = [];
+                cars = [];
+                for (let i = 0; i < 35; i++) people.push(new Person());
+                for (let i = 0; i < 12; i++) cars.push(new Car());
                 simTime = 0;
-                timeDisplay.textContent = '0.00';
-                initPendulums();
-                draw();
-                updateStatus();
+                timeDisplay.textContent = '0:00';
             }
 
-            // ── Rebuild on parameter change ──
-            function rebuild() {
-                const ampRad = amplitudeDeg * Math.PI / 180;
-                // Update amplitude on existing pendulums
-                for (const p of pendulums) {
-                    p.amplitude = ampRad;
-                }
-                // If count changed, re-init
-                if (pendulums.length !== numPendulums) {
-                    initPendulums();
-                }
-                draw();
-                updateStatus();
-            }
-
-            // ── Controls binding ──
-            // Count
-            countSlider.addEventListener('input', () => {
-                numPendulums = parseInt(countSlider.value, 10);
-                countValue.textContent = numPendulums;
-                initPendulums();
-                draw();
-                updateStatus();
-                // Re-layout on next frame
-                resizeCanvas();
-            });
-
-            // Speed
+            // ── Controls ──
             speedSlider.addEventListener('input', () => {
                 const val = parseInt(speedSlider.value, 10);
                 speedFactor = val / 100;
                 speedValue.textContent = speedFactor.toFixed(1) + '×';
             });
 
-            // Amplitude
-            ampSlider.addEventListener('input', () => {
-                amplitudeDeg = parseInt(ampSlider.value, 10);
-                ampValue.textContent = amplitudeDeg + '°';
-                for (const p of pendulums) {
-                    p.amplitude = amplitudeDeg * Math.PI / 180;
-                }
-                draw();
-            });
-
-            // Play / Pause
             playBtn.addEventListener('click', () => {
                 isPlaying = !isPlaying;
                 playBtn.innerHTML = isPlaying ?
                     '<span class="btn-icon">⏸</span> Pause' :
                     '<span class="btn-icon">▶</span> Play';
-                if (isPlaying) {
-                    // Resume animation if needed
-                }
+                if (isPlaying) lastTimestamp = 0;
+                statusText.textContent = isPlaying ? 'AI alive' : 'paused';
             });
 
-            // Reset
-            resetBtn.addEventListener('click', resetSim);
+            resetBtn.addEventListener('click', () => {
+                rebuildCity();
+                statusText.textContent = '🔄 reset';
+                setTimeout(() => { statusText.textContent = 'AI alive'; }, 1000);
+            });
 
-            // ── Window resize ──
-            function handleResize() {
-                resizeCanvas();
-                draw();
-            }
-
-            // ── Init ──
-            function init() {
-                resizeCanvas();
-                initPendulums();
-                draw();
-                updateStatus();
-                // Start animation
-                if (rafId) cancelAnimationFrame(rafId);
-                rafId = requestAnimationFrame(animate);
-            }
-
-            // ── Keyboard shortcuts ──
             document.addEventListener('keydown', (e) => {
                 if (e.key === ' ' || e.key === 'Space') {
                     e.preventDefault();
                     playBtn.click();
                 }
-                if (e.key === 'r' || e.key === 'R') {
-                    resetBtn.click();
-                }
+                if (e.key === 'r' || e.key === 'R') resetBtn.click();
             });
 
-            // ── RoundRect polyfill for older browsers ──
-            if (!CanvasRenderingContext2D.prototype.roundRect) {
-                CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
-                    const r = typeof radii === 'number' ? radii : (radii || 0);
-                    this.moveTo(x + r, y);
-                    this.quadraticCurveTo(x + w, y, x + w, y + r);
-                    this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-                    this.quadraticCurveTo(x, y + h, x, y + h - r);
-                    this.quadraticCurveTo(x, y, x + r, y);
-                    this.closePath();
-                    return this;
-                };
+            // ── Init ──
+            function init() {
+                buildCity();
+                people = [];
+                cars = [];
+                for (let i = 0; i < 40; i++) people.push(new Person());
+                for (let i = 0; i < 14; i++) cars.push(new Car());
+                resize();
+                lastTimestamp = 0;
+                if (rafId) cancelAnimationFrame(rafId);
+                rafId = requestAnimationFrame(loop);
             }
 
-            // ── Start ──
-            window.addEventListener('resize', handleResize);
+            window.addEventListener('resize', resize);
             init();
 
-            // Expose for debugging
-            window.__pendulum = { reset: resetSim, rebuild, pendulums };
+            // ── Expose for debugging ──
+            window.__city = { people, cars, blocks, intersections, rebuildCity };
 
         })();
     </script>
