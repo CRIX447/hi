@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pendulum Wave</title>
+    <style>
+        /* ── Reset & Base ── */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0e17;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #e8edf5;
+            padding: 16px;
+            margin: 0;
+            user-select: none;
+        }
+
+        .app {
+            max-width: 1100px;
+            width: 100%;
+            background: linear-gradient(145deg, #121824, #1a2233);
+            border-radius: 32px;
+            padding: 28px 32px 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            padding: 0 4px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            background: linear-gradient(135deg, #c8d6e5, #8395a7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1 span {
+            font-weight: 300;
+            font-size: 16px;
+            opacity: 0.6;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.45);
+        }
+
+        .time-display {
+            font-size: 18px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            color: #a0b4c8;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 6px 18px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .time-display .num {
+            color: #eef5ff;
+            font-weight: 500;
+        }
+
+        /* ── Canvas Wrapper ── */
+        .canvas-wrapper {
+            position: relative;
+            border-radius: 18px;
+            overflow: hidden;
+            background: radial-gradient(ellipse at 50% 20%, #1a2538, #0b101a);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow: inset 0 4px 30px rgba(0, 0, 0, 0.6);
+            margin-bottom: 20px;
+        }
+
+        canvas#pendulumCanvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 9;
+            background: transparent;
+            cursor: default;
+        }
+
+        /* ── Controls ── */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px 28px;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 6px 4px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            margin-top: 4px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-group label {
+            font-size: 13px;
+            font-weight: 400;
+            color: #8fa4bc;
+            letter-spacing: 0.3px;
+            min-width: 44px;
+        }
+
+        .control-group .value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #d6e3f0;
+            min-width: 32px;
+            text-align: center;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 110px;
+            height: 4px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #2a3a55, #5b7f9e);
+            outline: none;
+            transition: opacity 0.2s;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #7eb6d9, #3f6a8c);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 16px rgba(94, 159, 209, 0.25);
+            transition: 0.15s;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.12);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 24px rgba(94, 159, 209, 0.4);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #7eb6d9, #3f6a8c);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #c8dae9;
+            padding: 7px 18px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 450;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+            backdrop-filter: blur(4px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.10);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2d4b6b, #1d334a);
+            border-color: rgba(94, 159, 209, 0.25);
+            color: #d6eaff;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3a5f82, #25415e);
+            border-color: rgba(94, 159, 209, 0.4);
+        }
+
+        .btn-primary.active {
+            background: linear-gradient(135deg, #7a4a3a, #5a3228);
+            border-color: rgba(209, 124, 94, 0.3);
+        }
+
+        .btn-icon {
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        /* ── Wave status badge ── */
+        .status-badge {
+            font-size: 12px;
+            font-weight: 400;
+            padding: 4px 14px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #7a96b0;
+            letter-spacing: 0.4px;
+        }
+
+        .status-badge .highlight {
+            color: #b8d4f0;
+            font-weight: 450;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 700px) {
+            .app {
+                padding: 16px 16px 20px;
+                border-radius: 20px;
+            }
+            .header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .header h1 {
+                font-size: 18px;
+            }
+            .header h1 span {
+                font-size: 13px;
+            }
+            .time-display {
+                font-size: 14px;
+                padding: 4px 14px;
+            }
+            .controls {
+                gap: 12px 16px;
+                padding: 12px 0 0;
+            }
+            input[type="range"] {
+                width: 80px;
+            }
+            .control-group label {
+                font-size: 12px;
+                min-width: 32px;
+            }
+            .btn {
+                font-size: 12px;
+                padding: 5px 12px;
+            }
+            canvas#pendulumCanvas {
+                aspect-ratio: 4 / 3;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .control-group {
+                justify-content: space-between;
+            }
+            input[type="range"] {
+                flex: 1;
+                width: auto;
+            }
+            .btn-group {
+                justify-content: center;
+                margin-top: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                Pendulum Wave
+                <span>synchronization</span>
+            </h1>
+            <div class="time-display">
+                <span class="num" id="timeDisplay">0.00</span>s
+            </div>
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="pendulumCanvas"></canvas>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <!-- Pendulums -->
+            <div class="control-group">
+                <label>Count</label>
+                <input type="range" id="countSlider" min="6" max="30" value="20" step="1" />
+                <span class="value" id="countValue">20</span>
+            </div>
+
+            <!-- Speed -->
+            <div class="control-group">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="0" max="300" value="100" step="1" />
+                <span class="value" id="speedValue">1.0×</span>
+            </div>
+
+            <!-- Amplitude -->
+            <div class="control-group">
+                <label>Amplitude</label>
+                <input type="range" id="ampSlider" min="5" max="45" value="22" step="1" />
+                <span class="value" id="ampValue">22°</span>
+            </div>
+
+            <!-- Buttons -->
+            <div class="btn-group">
+                <button class="btn btn-primary" id="playBtn">
+                    <span class="btn-icon">⏸</span> Pause
+                </button>
+                <button class="btn" id="resetBtn">
+                    <span class="btn-icon">↺</span> Reset
+                </button>
+            </div>
+
+            <!-- Status -->
+            <div class="status-badge" id="statusBadge">
+                <span class="highlight">●</span> wave
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  Pendulum Wave Simulation
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        (() => {
+            'use strict';
+
+            // ── DOM refs ──
+            const canvas = document.getElementById('pendulumCanvas');
+            const ctx = canvas.getContext('2d');
+
+            const timeDisplay = document.getElementById('timeDisplay');
+            const countSlider = document.getElementById('countSlider');
+            const countValue = document.getElementById('countValue');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedValue = document.getElementById('speedValue');
+            const ampSlider = document.getElementById('ampSlider');
+            const ampValue = document.getElementById('ampValue');
+            const playBtn = document.getElementById('playBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const statusBadge = document.getElementById('statusBadge');
+
+            // ── Physics constants ──
+            const G = 9.8; // gravity (m/s²)
+
+            // ── State ──
+            let numPendulums = 20;
+            let speedFactor = 1.0; // 0 … 3
+            let amplitudeDeg = 22; // degrees
+            let isPlaying = true;
+            let simTime = 0; // seconds
+
+            // Pendulum data
+            let pendulums = [];
+
+            // Canvas sizing
+            let W = 0;
+            let H = 0;
+            let dpr = 1;
+
+            // Animation frame
+            let rafId = null;
+
+            // ── Pendulum class ──
+            class Pendulum {
+                constructor(index, total, minT, maxT, ampRad) {
+                    this.index = index;
+                    // Period: linearly spaced from minT to maxT
+                    const t = total > 1 ? index / (total - 1) : 0.5;
+                    this.period = minT + t * (maxT - minT);
+                    // Length: L = g * (T / 2π)²
+                    this.length = G * Math.pow(this.period / (2 * Math.PI), 2);
+                    // Amplitude (radians) – same for all
+                    this.amplitude = ampRad;
+                    // Initial angle (all start at amplitude)
+                    this.angle0 = ampRad;
+                    // Horizontal position (set later)
+                    this.pivotX = 0;
+                    // Color (set later)
+                    this.color = '';
+                }
+
+                getAngle(t) {
+                    // Simple harmonic motion
+                    const omega = 2 * Math.PI / this.period;
+                    return this.amplitude * Math.cos(omega * t);
+                }
+
+                getPosition(t, pivotX, pivotY) {
+                    const theta = this.getAngle(t);
+                    const L = this.length;
+                    // Project to screen coordinates
+                    const x = pivotX + L * Math.sin(theta);
+                    const y = pivotY + L * Math.cos(theta);
+                    return { x, y, theta };
+                }
+            }
+
+            // ── Initialize pendulums ──
+            function initPendulums() {
+                const ampRad = amplitudeDeg * Math.PI / 180;
+                // Period range: 0.7s … 2.6s (nice visual spread)
+                const T_min = 0.70;
+                const T_max = 2.60;
+                const total = numPendulums;
+
+                pendulums = [];
+                for (let i = 0; i < total; i++) {
+                    const p = new Pendulum(i, total, T_min, T_max, ampRad);
+                    // Color: HSL from 210° (blue) to 340° (pink) with high saturation
+                    const hue = 210 + (i / (total - 1 || 1)) * 130;
+                    p.color = `hsl(${hue}, 80%, 62%)`;
+                    pendulums.push(p);
+                }
+            }
+
+            // ── Resize canvas ──
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                dpr = window.devicePixelRatio || 1;
+                W = rect.width;
+                H = rect.height;
+                canvas.width = W * dpr;
+                canvas.height = H * dpr;
+                ctx.scale(dpr, dpr);
+            }
+
+            // ── Layout ──
+            function getLayout() {
+                const padX = W * 0.045;
+                const padY = H * 0.06;
+                const topY = padY + H * 0.04;
+                const bottomY = H - padY - H * 0.02;
+                const usableW = W - 2 * padX;
+                const spacing = usableW / (numPendulums - 1 || 1);
+                const maxLen = (bottomY - topY) * 0.88;
+                return { padX, topY, bottomY, spacing, maxLen };
+            }
+
+            // ── Draw ──
+            function draw() {
+                const layout = getLayout();
+                const { padX, topY, bottomY, spacing, maxLen } = layout;
+
+                // Clear
+                ctx.clearRect(0, 0, W, H);
+
+                // ── Background subtle grid ──
+                ctx.save();
+                ctx.globalAlpha = 0.06;
+                ctx.strokeStyle = '#7a9bcb';
+                ctx.lineWidth = 0.5;
+                for (let x = 0; x < W; x += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, H);
+                    ctx.stroke();
+                }
+                for (let y = 0; y < H; y += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(W, y);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // ── Reference line (equilibrium) ──
+                ctx.save();
+                ctx.globalAlpha = 0.10;
+                ctx.strokeStyle = '#7a9bcb';
+                ctx.lineWidth = 0.8;
+                ctx.setLineDash([6, 10]);
+                ctx.beginPath();
+                ctx.moveTo(padX - 8, bottomY);
+                ctx.lineTo(W - padX + 8, bottomY);
+                ctx.stroke();
+                ctx.restore();
+
+                // ── Compute bob positions ──
+                const positions = [];
+                for (let i = 0; i < numPendulums; i++) {
+                    const p = pendulums[i];
+                    const pivotX = padX + i * spacing;
+                    // Scale length to fit canvas
+                    const scale = maxLen / (p.length || 1);
+                    const L_scaled = p.length * scale;
+                    // Use scaled length for drawing, but keep physical length for physics
+                    const theta = p.getAngle(simTime * speedFactor);
+                    const bobX = pivotX + L_scaled * Math.sin(theta);
+                    const bobY = bottomY - L_scaled * (1 - Math.cos(theta));
+                    positions.push({
+                        index: i,
+                        pivotX,
+                        pivotY: bottomY,
+                        bobX,
+                        bobY,
+                        theta,
+                        L_scaled,
+                        color: p.color,
+                        period: p.period,
+                    });
+                }
+
+                // ── Draw pendulum strings ──
+                ctx.save();
+                for (const pos of positions) {
+                    const alpha = 0.25 + 0.15 * (1 - Math.abs(pos.theta) / (amplitudeDeg * Math.PI / 180 + 0.01));
+                    ctx.globalAlpha = Math.min(alpha, 0.55);
+                    ctx.strokeStyle = '#b0cce8';
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.moveTo(pos.pivotX, pos.pivotY);
+                    ctx.lineTo(pos.bobX, pos.bobY);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // ── Draw bobs (with glow) ──
+                for (const pos of positions) {
+                    const radius = Math.max(4, 7 + 2.5 * (1 - pos.index / numPendulums));
+
+                    // Glow
+                    const grad = ctx.createRadialGradient(pos.bobX, pos.bobY, 0, pos.bobX, pos.bobY, radius * 3.2);
+                    const col = pos.color;
+                    grad.addColorStop(0, col);
+                    grad.addColorStop(0.3, col + '88');
+                    grad.addColorStop(1, col + '00');
+                    ctx.save();
+                    ctx.globalAlpha = 0.30;
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(pos.bobX, pos.bobY, radius * 3.2, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.restore();
+
+                    // Bob body
+                    ctx.save();
+                    ctx.shadowColor = pos.color;
+                    ctx.shadowBlur = 18;
+                    ctx.fillStyle = pos.color;
+                    ctx.beginPath();
+                    ctx.arc(pos.bobX, pos.bobY, radius, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                    // Inner highlight
+                    ctx.shadowBlur = 0;
+                    const hl = ctx.createRadialGradient(
+                        pos.bobX - radius * 0.3, pos.bobY - radius * 0.35, 0,
+                        pos.bobX, pos.bobY, radius
+                    );
+                    hl.addColorStop(0, 'rgba(255,255,255,0.50)');
+                    hl.addColorStop(0.4, 'rgba(255,255,255,0.10)');
+                    hl.addColorStop(1, 'rgba(255,255,255,0)');
+                    ctx.fillStyle = hl;
+                    ctx.beginPath();
+                    ctx.arc(pos.bobX, pos.bobY, radius, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                    // Rim
+                    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+                    ctx.lineWidth = 0.6;
+                    ctx.beginPath();
+                    ctx.arc(pos.bobX, pos.bobY, radius, 0, 2 * Math.PI);
+                    ctx.stroke();
+
+                    ctx.restore();
+                }
+
+                // ── Draw pivot mounts ──
+                ctx.save();
+                for (const pos of positions) {
+                    ctx.globalAlpha = 0.30;
+                    ctx.fillStyle = '#5a7a9a';
+                    ctx.beginPath();
+                    ctx.arc(pos.pivotX, pos.pivotY, 3, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // ── Wave chart at bottom ──
+                drawWaveChart(positions, padX, bottomY + 18, W - 2 * padX, 52);
+            }
+
+            // ── Wave chart ──
+            function drawWaveChart(positions, x0, y0, width, height) {
+                if (positions.length < 2) return;
+
+                const pad = 6;
+                const chartW = width - 2 * pad;
+                const chartH = height - 2 * pad;
+                const cx = x0 + pad;
+                const cy = y0 + pad;
+
+                // Background
+                ctx.save();
+                ctx.globalAlpha = 0.08;
+                ctx.fillStyle = '#4a6a8a';
+                ctx.roundRect ? ctx.roundRect(x0, y0, width, height, 6) : ctx.rect(x0, y0, width, height);
+                ctx.fill();
+                ctx.restore();
+
+                // Horizontal center line
+                ctx.save();
+                ctx.globalAlpha = 0.12;
+                ctx.strokeStyle = '#7a9bcb';
+                ctx.lineWidth = 0.6;
+                ctx.setLineDash([3, 6]);
+                ctx.beginPath();
+                ctx.moveTo(cx, cy + chartH / 2);
+                ctx.lineTo(cx + chartW, cy + chartH / 2);
+                ctx.stroke();
+                ctx.restore();
+
+                if (positions.length < 2) return;
+
+                // Find max displacement for scaling
+                let maxDisp = 0;
+                for (const pos of positions) {
+                    const disp = Math.abs(pos.bobX - pos.pivotX);
+                    if (disp > maxDisp) maxDisp = disp;
+                }
+                if (maxDisp < 0.001) maxDisp = 0.001;
+
+                // Scale factor: map displacement to chart height
+                const scaleY = (chartH * 0.42) / maxDisp;
+
+                // Draw wave line
+                ctx.save();
+                ctx.beginPath();
+                for (let i = 0; i < positions.length; i++) {
+                    const pos = positions[i];
+                    const x = cx + (i / (positions.length - 1)) * chartW;
+                    const disp = pos.bobX - pos.pivotX;
+                    const y = cy + chartH / 2 - disp * scaleY;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.strokeStyle = '#8ab8e8';
+                ctx.lineWidth = 2.0;
+                ctx.shadowColor = '#5a9ad0';
+                ctx.shadowBlur = 12;
+                ctx.stroke();
+                ctx.restore();
+
+                // Fill under curve
+                ctx.save();
+                ctx.beginPath();
+                for (let i = 0; i < positions.length; i++) {
+                    const pos = positions[i];
+                    const x = cx + (i / (positions.length - 1)) * chartW;
+                    const disp = pos.bobX - pos.pivotX;
+                    const y = cy + chartH / 2 - disp * scaleY;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.lineTo(cx + chartW, cy + chartH / 2);
+                ctx.lineTo(cx, cy + chartH / 2);
+                ctx.closePath();
+                const grad = ctx.createLinearGradient(0, cy, 0, cy + chartH);
+                grad.addColorStop(0, 'rgba(100, 180, 240, 0.15)');
+                grad.addColorStop(0.5, 'rgba(100, 180, 240, 0.04)');
+                grad.addColorStop(1, 'rgba(100, 180, 240, 0)');
+                ctx.fillStyle = grad;
+                ctx.fill();
+                ctx.restore();
+
+                // Dot markers
+                ctx.save();
+                for (let i = 0; i < positions.length; i += Math.max(1, Math.floor(positions.length / 12))) {
+                    const pos = positions[i];
+                    const x = cx + (i / (positions.length - 1)) * chartW;
+                    const disp = pos.bobX - pos.pivotX;
+                    const y = cy + chartH / 2 - disp * scaleY;
+                    ctx.globalAlpha = 0.40;
+                    ctx.fillStyle = pos.color || '#8ab8e8';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 2.5, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // Label
+                ctx.save();
+                ctx.globalAlpha = 0.25;
+                ctx.fillStyle = '#7a9bcb';
+                ctx.font = '9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText('wave pattern', cx + chartW / 2, y0 + height - 2);
+                ctx.restore();
+            }
+
+            // ── Animation loop ──
+            function animate(timestamp) {
+                if (!isPlaying) {
+                    rafId = requestAnimationFrame(animate);
+                    return;
+                }
+
+                // Update time (fixed step ~ 1/60)
+                const dt = 1 / 60;
+                simTime += dt;
+
+                // Update display
+                timeDisplay.textContent = simTime.toFixed(2);
+
+                // Update status
+                updateStatus();
+
+                // Draw
+                draw();
+
+                rafId = requestAnimationFrame(animate);
+            }
+
+            // ── Status badge ──
+            function updateStatus() {
+                if (numPendulums < 2) {
+                    statusBadge.innerHTML = '<span class="highlight">○</span> idle';
+                    return;
+                }
+                // Check if pendulums are roughly in phase (simple heuristic)
+                const ref = pendulums[0]?.getAngle(simTime * speedFactor) || 0;
+                let sumDiff = 0;
+                for (const p of pendulums) {
+                    const a = p.getAngle(simTime * speedFactor);
+                    sumDiff += Math.abs(a - ref);
+                }
+                const avgDiff = sumDiff / numPendulums;
+                const threshold = 0.06; // radians
+                const isSynced = avgDiff < threshold;
+                const icon = isSynced ? '◆' : '●';
+                const label = isSynced ? 'synced' : 'wave';
+                const color = isSynced ? '#7ad0a0' : '#b8d4f0';
+                statusBadge.innerHTML = `<span class="highlight" style="color:${color}">${icon}</span> ${label}`;
+            }
+
+            // ── Reset simulation ──
+            function resetSim() {
+                simTime = 0;
+                timeDisplay.textContent = '0.00';
+                initPendulums();
+                draw();
+                updateStatus();
+            }
+
+            // ── Rebuild on parameter change ──
+            function rebuild() {
+                const ampRad = amplitudeDeg * Math.PI / 180;
+                // Update amplitude on existing pendulums
+                for (const p of pendulums) {
+                    p.amplitude = ampRad;
+                }
+                // If count changed, re-init
+                if (pendulums.length !== numPendulums) {
+                    initPendulums();
+                }
+                draw();
+                updateStatus();
+            }
+
+            // ── Controls binding ──
+            // Count
+            countSlider.addEventListener('input', () => {
+                numPendulums = parseInt(countSlider.value, 10);
+                countValue.textContent = numPendulums;
+                initPendulums();
+                draw();
+                updateStatus();
+                // Re-layout on next frame
+                resizeCanvas();
+            });
+
+            // Speed
+            speedSlider.addEventListener('input', () => {
+                const val = parseInt(speedSlider.value, 10);
+                speedFactor = val / 100;
+                speedValue.textContent = speedFactor.toFixed(1) + '×';
+            });
+
+            // Amplitude
+            ampSlider.addEventListener('input', () => {
+                amplitudeDeg = parseInt(ampSlider.value, 10);
+                ampValue.textContent = amplitudeDeg + '°';
+                for (const p of pendulums) {
+                    p.amplitude = amplitudeDeg * Math.PI / 180;
+                }
+                draw();
+            });
+
+            // Play / Pause
+            playBtn.addEventListener('click', () => {
+                isPlaying = !isPlaying;
+                playBtn.innerHTML = isPlaying ?
+                    '<span class="btn-icon">⏸</span> Pause' :
+                    '<span class="btn-icon">▶</span> Play';
+                if (isPlaying) {
+                    // Resume animation if needed
+                }
+            });
+
+            // Reset
+            resetBtn.addEventListener('click', resetSim);
+
+            // ── Window resize ──
+            function handleResize() {
+                resizeCanvas();
+                draw();
+            }
+
+            // ── Init ──
+            function init() {
+                resizeCanvas();
+                initPendulums();
+                draw();
+                updateStatus();
+                // Start animation
+                if (rafId) cancelAnimationFrame(rafId);
+                rafId = requestAnimationFrame(animate);
+            }
+
+            // ── Keyboard shortcuts ──
+            document.addEventListener('keydown', (e) => {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    playBtn.click();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetBtn.click();
+                }
+            });
+
+            // ── RoundRect polyfill for older browsers ──
+            if (!CanvasRenderingContext2D.prototype.roundRect) {
+                CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+                    const r = typeof radii === 'number' ? radii : (radii || 0);
+                    this.moveTo(x + r, y);
+                    this.quadraticCurveTo(x + w, y, x + w, y + r);
+                    this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                    this.quadraticCurveTo(x, y + h, x, y + h - r);
+                    this.quadraticCurveTo(x, y, x + r, y);
+                    this.closePath();
+                    return this;
+                };
+            }
+
+            // ── Start ──
+            window.addEventListener('resize', handleResize);
+            init();
+
+            // Expose for debugging
+            window.__pendulum = { reset: resetSim, rebuild, pendulums };
+
+        })();
+    </script>
+
+</body>
+</html>
